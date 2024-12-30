@@ -1,0 +1,10 @@
+[SUBJECT]
+Hello {Name}, your order from {Company} is ready!
+
+[BODY]
+Hi {Name},
+
+We are excited to inform you that your order from {Company} is ready. Please visit our store to pick it up.
+
+Best regards,
+Your Company Team
