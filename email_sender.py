@@ -4,6 +4,18 @@ import smtplib
 from email.mime.text import MIMEText
 from email.mime.multipart import MIMEMultipart
 
+# Function to read email template from a single text file
+def read_email_template(file_path):
+    with open(file_path, 'r') as file:
+        content = file.read()
+    # Split subject and body using delimiters
+    subject_start = content.find("[SUBJECT]") + len("[SUBJECT]")
+    subject_end = content.find("[BODY]").strip()
+    subject = content[subject_start:subject_end].strip()
+    body = content[content.find("[BODY]") + len("[BODY]") :].strip()
+    return subject, body
+
+# Function to send emails
 def send_emails(smtp_server, smtp_port, sender_email, sender_password, subject, body_template, contacts_file):
     try:
         # Load the contact list
@@ -42,13 +54,8 @@ smtp_port = st.number_input("SMTP Port", 587)
 sender_email = st.text_input("Your Email")
 sender_password = st.text_input("Your Password", type="password")
 
-# Email template configuration
-st.header("Email Template")
-subject = st.text_input("Email Subject", "Hello {Name}!")
-body_template = st.text_area(
-    "Email Body Template",
-    "Hi {Name},\n\nThis is a personalized email for {Company}.\n\nBest regards,\nYour Name",
-)
+# Read email templates from a single text file
+subject, body_template = read_email_template("email_template.txt")
 
 # Upload contacts CSV file
 st.header("Upload Contacts")
