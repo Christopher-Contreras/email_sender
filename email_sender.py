@@ -46,24 +46,29 @@ def send_email(smtp_server, smtp_port, sender_email, sender_password, receiver_e
 
 # Function to send bulk emails from a CSV file
 def send_bulk_emails(csv_file, smtp_server, smtp_port, sender_email, sender_password, subject, body_template):
+    # Display the raw contents of the uploaded CSV to debug
+    st.write("Uploaded CSV file content:")
+    st.text(csv_file.getvalue().decode("utf-8"))  # Show raw CSV content in the app
+
     try:
-        # Try reading the CSV file
+        # Attempt to read the CSV file
         df = pd.read_csv(csv_file)
         
-        # Check if the CSV is empty
+        # If the CSV is empty, show an error
         if df.empty:
             st.error("The CSV file is empty. Please check the file content.")
             return
-        
-        # If you want to debug and inspect the CSV content, you can show it here
+
+        # Show the loaded CSV for debugging purposes
         st.write("CSV Loaded Successfully!")
-        st.write(df)  # This will display the CSV data in Streamlit UI for debugging
-        
+        st.write(df)  # This will display the CSV data in Streamlit UI
+
     except Exception as e:
+        # Handle any error that occurs when reading the CSV
         st.error(f"Failed to read CSV file: {str(e)}")
         return
 
-    # Proceed with the rest of the email sending process
+    # Send email logic (if CSV was successfully read)
     for index, row in df.iterrows():
         name = row['Name']
         receiver_email = row['Email']
@@ -72,9 +77,9 @@ def send_bulk_emails(csv_file, smtp_server, smtp_port, sender_email, sender_pass
         # Personalize the email body with recipient's information
         personalized_body = body_template.replace("{Name}", name).replace("{Company}", company)
         
-        # You can now send the email here (you can call send_email function as needed)
+        # Send the email here (you can call the send_email function as needed)
         send_email(smtp_server, smtp_port, sender_email, sender_password, receiver_email, subject, personalized_body)
-
+        
 # Streamlit UI for input
 def main():
     st.title("Automated Email Sender")
