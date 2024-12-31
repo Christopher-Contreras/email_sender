@@ -3,7 +3,6 @@ from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
 import pandas as pd
 import streamlit as st
-import time
 import io
 
 # Function to read the email template and extract subject and body
@@ -38,6 +37,7 @@ def send_bulk_emails(csv_file, smtp_server, smtp_port, sender_email, sender_pass
     try:
         # Read the raw content of the uploaded CSV
         raw_csv = csv_file.getvalue().decode("utf-8")
+        st.text("Raw CSV content:")
         st.text(raw_csv)  # Show raw CSV content for debugging
 
         # Attempt to read the CSV file
@@ -97,6 +97,11 @@ def main():
             df = pd.read_csv(uploaded_file)
             st.write("CSV Loaded Successfully!")
             st.write(df)  # Display the DataFrame for debugging purposes
+            
+            # Additional check to ensure the CSV is not empty
+            if df.empty:
+                st.error("The CSV file is empty. Please upload a valid CSV.")
+                
         except pd.errors.EmptyDataError:
             st.error("The CSV file is empty. Please upload a valid CSV.")
         except pd.errors.ParserError:
