@@ -31,17 +31,19 @@ def send_email(smtp_server, smtp_port, sender_email, sender_password, receiver_e
             st.success(f"Email successfully sent to {receiver_email}")
     except Exception as e:
         st.error(f"Failed to send email to {receiver_email}: {str(e)}")
-
-# Function to send bulk emails from a CSV file
+        
 def send_bulk_emails(csv_file, smtp_server, smtp_port, sender_email, sender_password, subject, body_template):
     try:
         # Read the raw content of the uploaded CSV
         raw_csv = csv_file.getvalue().decode("utf-8")
-        st.text("Raw CSV content:")
+        st.text("Raw CSV content:")  # Show raw CSV content for debugging
         st.text(raw_csv)  # Show raw CSV content for debugging
 
-        # Attempt to read the CSV file
-        df = pd.read_csv(csv_file, encoding='utf-8')
+        # Using StringIO to simulate a file-like object and handle the CSV with pandas
+        csv_data = io.StringIO(raw_csv)
+
+        # Attempt to read the CSV file using pandas
+        df = pd.read_csv(csv_data, delimiter=',', encoding='utf-8')
 
         # Display the first few rows of the DataFrame for debugging
         st.write("CSV Loaded Successfully!")
