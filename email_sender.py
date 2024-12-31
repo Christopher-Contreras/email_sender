@@ -1,84 +1,109 @@
-import streamlit as st
-import pandas as pd
 import smtplib
-from email.mime.text import MIMEText
 from email.mime.multipart import MIMEMultipart
+from email.mime.text import MIMEText
+import pandas as pd
+import streamlit as st
+import time
 
-# Function to read email template from a single text file
-def read_email_template(file_path):
-    with open(file_path, 'r') as file:
+# Function to read the email template and extract subject and body
+def read_email_template(template_path):
+    # Read the template file
+    with open(template_path, "r") as file:
         content = file.read()
-    # Split subject and body using delimiters
-    subject_start = content.find("[SUBJECT]") + len("[SUBJECT]")
-    subject_end = content.find("[BODY]").strip()
-    subject = content[subject_start:subject_end].strip()
-    body = content[content.find("[BODY]") + len("[BODY]") :].strip()
-    return subject, body
 
-# Function to send emails
-def send_emails(smtp_server, smtp_port, sender_email, sender_password, subject, body_template, contacts_file):
+    # Find where the subject ends (at the [BODY] tag)
+    subject_end = content.find("[BODY]")
+    if subject_end == -1:
+        raise ValueError("The email template does not contain the '[BODY]' tag")
+
+    # Extract the subject (text before the [BODY] tag)
+    subject = content[:subject_end].strip()
+
+    # Extract the body (text after the [BODY] tag)
+    body_template = content[subject_end + len("[BODY]"):].strip()
+    
+    return subject, body_template
+
+
+# Function to send emails using the SMTP server
+def send_email(smtp_server, smtp_port, sender_email, sender_password, receiver_email, subject, body):
     try:
-        # Load the contact list
-        contacts = pd.read_csv(contacts_file)
+        # Create the email message
+        msg = MIMEMultipart()
+        msg['From'] = sender_email
+        msg['To'] = receiver_email
+        msg['Subject'] = subject
+        msg.attach(MIMEText(body, 'plain'))
 
-        # Connect to the SMTP server
-        server = smtplib.SMTP(smtp_server, smtp_port)
-        server.starttls()
-        server.login(sender_email, sender_password)
-
-        # Send emails
-        for _, contact in contacts.iterrows():
-            msg = MIMEMultipart()
-            msg['From'] = sender_email
-            msg['To'] = contact['Email']
-            msg['Subject'] = subject
-
-            # Personalize the body using placeholders
-            body = body_template.format(**contact.to_dict())
-            msg.attach(MIMEText(body, 'plain'))
-            server.sendmail(sender_email, contact['Email'], msg.as_string())
-
-        server.quit()
-        return "Emails sent successfully!"
+        # Connect to the SMTP server and send the email
+        with smtplib.SMTP(smtp_server, smtp_port) as server:
+            server.starttls()
+            server.login(sender_email, sender_password)
+            server.sendmail(sender_email, receiver_email, msg.as_string())
+            st.success(f"Email successfully sent to {receiver_email}")
     except Exception as e:
-        return f"Error: {e}"
+        st.error(f"Failed to send email to {receiver_email}: {str(e)}")
 
-# Streamlit UI
-st.title("Automated Email Sender")
-st.write("Send personalized emails from a master contact list.")
 
-# Email server configuration
-st.header("Email Configuration")
-smtp_server = st.text_input("SMTP Server", "smtp.gmail.com")
-smtp_port = st.number_input("SMTP Port", 587)
-sender_email = st.text_input("Your Email")
-sender_password = st.text_input("Your Password", type="password")
+# Function to send bulk emails from a CSV file
+def send_bulk_emails(csv_file, smtp_server, smtp_port, sender_email, sender_password, subject, body_template):
+    # Load the CSV file containing email addresses and names
+    try:
+        df = pd.read_csv(csv_file)
+    except Exception as e:
+        st.error(f"Failed to read CSV file: {str(e)}")
+        return
 
-# Read email templates from a single text file
-subject, body_template = read_email_template("email_template.txt")
+    # Send an email to each person in the CSV file
+    for index, row in df.iterrows():
+        name = row['Name']
+        receiver_email = row['Email']
+        # Personalize the body with the recipient's name
+        personalized_body = body_template.replace("[NAME]", name)
 
-# Upload contacts CSV file
-st.header("Upload Contacts")
-contacts_file = st.file_uploader(
-    "Upload a CSV file with at least 'Name', 'Email', and other fields for personalization.",
-    type="csv",
-)
+        send_email(smtp_server, smtp_port, sender_email, sender_password, receiver_email, subject, personalized_body)
+        time.sleep(1)  # To avoid hitting rate limits, add a short delay
 
-# Send emails button
-if st.button("Send Emails"):
-    if not all([smtp_server, smtp_port, sender_email, sender_password, contacts_file]):
-        st.error("Please fill in all fields and upload a contacts file.")
-    else:
-        result = send_emails(
-            smtp_server,
-            smtp_port,
-            sender_email,
-            sender_password,
-            subject,
-            body_template,
-            contacts_file,
-        )
-        if "successfully" in result:
-            st.success(result)
-        else:
-            st.error(result)
+
+# Streamlit UI for input
+def main():
+    st.title("Automated Email Sender")
+
+    # Input fields for SMTP server, port, and sender credentials
+    smtp_server = st.text_input("SMTP Server (e.g., smtp.gmail.com)")
+    smtp_port = st.number_input("SMTP Port (e.g., 587 for TLS)", min_value=1, value=587)
+    sender_email = st.text_input("Sender Email Address")
+    sender_password = st.text_input("Sender Email Password", type="password")
+
+    # Upload CSV file with email list
+    uploaded_file = st.file_uploader("Upload CSV with Email Addresses", type=["csv"])
+    if uploaded_file:
+        # Read and display the CSV data for verification
+        df = pd.read_csv(uploaded_file)
+        st.write(df)
+
+    # Email template file
+    email_template_file = st.file_uploader("Upload Email Template", type=["txt"])
+    if email_template_file:
+        # Read and display the email template
+        content = email_template_file.read().decode("utf-8")
+        st.text_area("Email Template Content", content, height=200)
+
+        # Extract subject and body from the template
+        try:
+            subject, body_template = read_email_template(email_template_file)
+            st.write(f"Subject: {subject}")
+            st.write(f"Body Template: {body_template[:100]}...")  # Show the first 100 characters of the body
+
+            # Send emails button
+            if st.button("Send Emails"):
+                if smtp_server and sender_email and sender_password:
+                    st.info("Sending emails...")
+                    send_bulk_emails(uploaded_file, smtp_server, smtp_port, sender_email, sender_password, subject, body_template)
+                else:
+                    st.error("Please provide SMTP server credentials.")
+        except Exception as e:
+            st.error(f"Error processing email template: {str(e)}")
+
+if __name__ == "__main__":
+    main()
