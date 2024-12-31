@@ -77,44 +77,4 @@ def send_bulk_emails(csv_file, smtp_server, smtp_port, sender_email, sender_pass
         # Personalize the email body with recipient's information
         personalized_body = body_template.replace("{Name}", name).replace("{Company}", company)
         
-        # Send the email here (you can call the send_email function as needed)
-        send_email(smtp_server, smtp_port, sender_email, sender_password, receiver_email, subject, personalized_body)
-        
-# Streamlit UI for input
-def main():
-    st.title("Automated Email Sender")
-
-    # Input fields for SMTP server, port, and sender credentials
-    smtp_server = st.text_input("SMTP Server (e.g., smtp.gmail.com or smtp.mail.yahoo.com)")
-    smtp_port = st.number_input("SMTP Port (e.g., 587 for TLS)", min_value=1, value=587)
-    sender_email = st.text_input("Sender Email Address")
-    sender_password = st.text_input("Sender Email Password", type="password")
-
-    # Upload CSV file with email list
-    uploaded_file = st.file_uploader("Upload CSV with Email Addresses", type=["csv"])
-    if uploaded_file:
-        # Read and display the CSV data for verification
-        df = pd.read_csv(uploaded_file)
-        st.write(df)
-
-    # Email template file
-    email_template_file = st.file_uploader("Upload Email Template", type=["txt"])
-    if email_template_file:
-        # Extract subject and body from the template
-        try:
-            subject, body_template = read_email_template(email_template_file)
-            st.write(f"Subject: {subject}")
-            st.write(f"Body Template: {body_template[:100]}...")  # Show the first 100 characters of the body
-
-            # Send emails button
-            if st.button("Send Emails"):
-                if smtp_server and sender_email and sender_password:
-                    st.info("Sending emails...")
-                    send_bulk_emails(uploaded_file, smtp_server, smtp_port, sender_email, sender_password, subject, body_template)
-                else:
-                    st.error("Please provide SMTP server credentials.")
-        except Exception as e:
-            st.error(f"Error processing email template: {str(e)}")
-
-if __name__ == "__main__":
-    main()
+        # Send the email here (yo
