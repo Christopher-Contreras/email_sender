@@ -43,14 +43,14 @@ def send_bulk_emails(csv_file, smtp_server, smtp_port, sender_email, sender_pass
         # Attempt to read the CSV file
         df = pd.read_csv(csv_file, encoding='utf-8')
 
+        # Display the first few rows of the DataFrame for debugging
+        st.write("CSV Loaded Successfully!")
+        st.write(df.head())  # Display the first few rows to check if data is correctly loaded
+
         # If the CSV is empty, show an error
         if df.empty:
             st.error("The CSV file is empty. Please check the file content.")
             return
-
-        # Show the loaded CSV for debugging purposes
-        st.write("CSV Loaded Successfully!")
-        st.write(df)
 
     except pd.errors.EmptyDataError:
         st.error("The CSV file is empty. Please upload a valid CSV.")
@@ -95,10 +95,12 @@ def main():
             
             # Attempt to read the CSV
             df = pd.read_csv(uploaded_file)
-            st.write("CSV Loaded Successfully!")
-            st.write(df)  # Display the DataFrame for debugging purposes
             
-            # Additional check to ensure the CSV is not empty
+            # Display the first few rows of the DataFrame for debugging purposes
+            st.write("CSV Loaded Successfully!")
+            st.write(df.head())  # Display the first few rows of the CSV
+            
+            # Check if the CSV is empty
             if df.empty:
                 st.error("The CSV file is empty. Please upload a valid CSV.")
                 
