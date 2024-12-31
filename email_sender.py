@@ -25,7 +25,7 @@ def send_email(smtp_server, smtp_port, sender_email, sender_password, receiver_e
         msg['Subject'] = subject
         msg.attach(MIMEText(body, 'plain'))
 
-        with smtplib.SMTP(smtp_server, smtp_port, timeout=5) as server:
+        with smtplib.SMTP(smtp_server, smtp_port, timeout=30) as server:
             print(f"Attempting to connect to {smtp_server}...")
             server.set_debuglevel(1)  # Enable debug output for SMTP connection
             server.starttls()
