@@ -1,4 +1,4 @@
-import smtplib
+import smtplib 
 from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
 import pandas as pd
@@ -6,10 +6,9 @@ import streamlit as st
 import time
 
 # Function to read the email template and extract subject and body
-def read_email_template(template_path):
-    # Read the template file
-    with open(template_path, "r") as file:
-        content = file.read()
+def read_email_template(file):
+    # Read the template file content from the uploaded file (not from a file path)
+    content = file.read().decode("utf-8")
 
     # Find where the subject ends (at the [BODY] tag)
     subject_end = content.find("[BODY]")
@@ -70,7 +69,7 @@ def main():
     st.title("Automated Email Sender")
 
     # Input fields for SMTP server, port, and sender credentials
-    smtp_server = st.text_input("SMTP Server (e.g., smtp.gmail.com, smtp.mail.yahoo.com)")
+    smtp_server = st.text_input("SMTP Server (e.g., smtp.gmail.com)")
     smtp_port = st.number_input("SMTP Port (e.g., 587 for TLS)", min_value=1, value=587)
     sender_email = st.text_input("Sender Email Address")
     sender_password = st.text_input("Sender Email Password", type="password")
@@ -85,10 +84,6 @@ def main():
     # Email template file
     email_template_file = st.file_uploader("Upload Email Template", type=["txt"])
     if email_template_file:
-        # Read and display the email template
-        content = email_template_file.read().decode("utf-8")
-        st.text_area("Email Template Content", content, height=200)
-
         # Extract subject and body from the template
         try:
             subject, body_template = read_email_template(email_template_file)
