@@ -18,19 +18,24 @@ def read_email_template(file):
 # Function to send emails using the SMTP server
 def send_email(smtp_server, smtp_port, sender_email, sender_password, receiver_email, subject, body):
     try:
+        print(f"Connecting to SMTP server: {smtp_server} on port {smtp_port}")
+        
         msg = MIMEMultipart()
         msg['From'] = sender_email
         msg['To'] = receiver_email
         msg['Subject'] = subject
         msg.attach(MIMEText(body, 'plain'))
-        
+
         with smtplib.SMTP(smtp_server, smtp_port) as server:
+            print(f"Attempting to connect to {smtp_server}...")
             server.starttls()
             server.login(sender_email, sender_password)
             server.sendmail(sender_email, receiver_email, msg.as_string())
             st.success(f"Email successfully sent to {receiver_email}")
     except Exception as e:
+        print(f"Error details: {str(e)}")  # Print more details for debugging
         st.error(f"Failed to send email to {receiver_email}: {str(e)}")
+
         
 def send_bulk_emails(csv_file, smtp_server, smtp_port, sender_email, sender_password, subject, body_template):
     try:
