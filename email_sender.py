@@ -4,6 +4,7 @@ from email.mime.text import MIMEText
 import pandas as pd
 import streamlit as st
 import time
+import io
 
 # Function to read the email template and extract subject and body
 def read_email_template(file):
@@ -35,18 +36,28 @@ def send_email(smtp_server, smtp_port, sender_email, sender_password, receiver_e
 # Function to send bulk emails from a CSV file
 def send_bulk_emails(csv_file, smtp_server, smtp_port, sender_email, sender_password, subject, body_template):
     try:
-        # Display the raw contents of the uploaded CSV to debug
-        st.write("Uploaded CSV file content:")
+        # Read the raw content of the uploaded CSV for debugging
         raw_csv = csv_file.getvalue().decode("utf-8")
-        st.text(raw_csv)  # Show raw CSV content in the app
+        st.text(raw_csv)  # Show raw CSV content
         
-        # Attempt to read the CSV file
+        # Attempt to read the CSV
         df = pd.read_csv(csv_file)
         
-        # If the CSV is empty, show an error
+        # Check if CSV is empty
         if df.empty:
             st.error("The CSV file is empty. Please check the file content.")
             return
+        
+        # If CSV is valid, show the content for debugging
+        st.write("CSV Loaded Successfully!")
+        st.write(df)  # Display the DataFrame for debugging purposes
+    except pd.errors.EmptyDataError:
+        st.error("The CSV file is empty. Please upload a valid CSV.")
+    except pd.errors.ParserError:
+        st.error("There was an issue parsing the CSV file. Ensure the file format is correct.")
+    except Exception as e:
+        st.error(f"Failed to process the CSV file: {str(e)}")
+        return
 
         # Show the loaded CSV for debugging purposes
         st.write("CSV Loaded Successfully!")
