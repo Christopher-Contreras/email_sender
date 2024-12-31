@@ -69,7 +69,7 @@ def main():
     st.title("Automated Email Sender")
 
     # Input fields for SMTP server, port, and sender credentials
-    smtp_server = st.text_input("SMTP Server (e.g., smtp.gmail.com)")
+    smtp_server = st.text_input("SMTP Server (e.g., smtp.gmail.com or smtp.mail.yahoo.com)")
     smtp_port = st.number_input("SMTP Port (e.g., 587 for TLS)", min_value=1, value=587)
     sender_email = st.text_input("Sender Email Address")
     sender_password = st.text_input("Sender Email Password", type="password")
