@@ -41,7 +41,8 @@ def send_bulk_emails(csv_file, smtp_server, smtp_port, sender_email, sender_pass
         st.text(raw_csv)  # Show raw CSV content
         
         # Attempt to read the CSV
-        df = pd.read_csv(csv_file)
+       df = pd.read_csv(csv_file, encoding='utf-8')
+
         
         # Check if CSV is empty
         if df.empty:
