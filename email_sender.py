@@ -28,7 +28,7 @@ def send_email(smtp_server, smtp_port, sender_email, sender_password, receiver_e
         with smtplib.SMTP(smtp_server, smtp_port, timeout=60) as server:
             print(f"Attempting to connect to {smtp_server}...")
             server.set_debuglevel(1)  # Enable debug output for SMTP connection
-            server.starttls()
+            server.starttls()  # For TLS encryption (if using port 587)
             server.login(sender_email, sender_password)
             server.sendmail(sender_email, receiver_email, msg.as_string())
             print(f"Email sent to {receiver_email} successfully!")
@@ -39,7 +39,7 @@ def send_email(smtp_server, smtp_port, sender_email, sender_password, receiver_e
     except Exception as e:
         print(f"General error: {str(e)}")
         st.error(f"Failed to send email to {receiver_email}: {str(e)}")
-        
+
 def send_bulk_emails(csv_file, smtp_server, smtp_port, sender_email, sender_password, subject, body_template):
     try:
         # Read the raw content of the uploaded CSV
